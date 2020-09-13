@@ -37,7 +37,7 @@ const setting = {
 
 let results;
 const getLocalStorage = (quality) => {
-	results = localStorage.getItem(quality);
+	results = localStorage.getItem(quality) || 0;
 };
 
 // let results = parseInt(localStorage.getItem(setting.quality)); // получаем текущий рекорд из localStorage

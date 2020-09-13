@@ -10,8 +10,6 @@ const
 	record = document.querySelector('.record'), // поле рекорд
 	score = document.querySelector('.score'); // поле с очками
 
-let	distance = 0; // начальная дистанция между автомобилями
-
 audio.volume = 0.09; // начальные установки аудио
 
 car.classList.add('car'); // добавляем элементу car класс car
@@ -34,17 +32,23 @@ const setting = {
 	speed: 0,
 	traffic: 0,
 	level: 1,
+	quality: ''
 };
 
-let results = parseInt(localStorage.getItem('nfjs_score')); // получаем текущий рекорд из localStorage
+let results;
+const getLocalStorage = (quality) => {
+	results = localStorage.getItem(quality);
+};
+
+// let results = parseInt(localStorage.getItem(setting.quality)); // получаем текущий рекорд из localStorage
 score.textContent = 'Очки: 0'; // начальное количество очков
 record.textContent = results ? 'Рекорд: ' + results : 'Рекорд: ' + 0; // если рекорд есть, показываем его на странице, иначе false
 
 // сохраняем рекорд в localStorage
 const addLocalStorage = () => {
 	if (!results || results < setting.score) { // если текущий рекорд меньше набранных очков
-		localStorage.setItem('nfjs_score', setting.score); // перезаписываем рекорд
-		record.textContent = setting.score; // показываем на странице
+		localStorage.setItem(setting.quality, Math.floor(setting.score)); // перезаписываем рекорд
+		record.textContent = 'Рекорд: ' + Math.floor(setting.score); // показываем на странице
 	}
 };
 
@@ -62,14 +66,20 @@ const startGame = (event) => {
 		case 'easy':
 			setting.speed = 5;
 			setting.traffic = 3;
+			setting.quality = 'easy';
+			getLocalStorage(setting.quality);
 			break;
 		case 'medium':
-			setting.speed = 5;
+			setting.speed = 7;
 			setting.traffic = 2.5;
+			setting.quality = 'medium';
+			getLocalStorage(setting.quality);
 			break;
 		case 'hard':
-			setting.speed = 5;
+			setting.speed = 10;
 			setting.traffic = 2;
+			setting.quality = 'hard';
+			getLocalStorage(setting.quality);
 			break;
 	}
 	start.classList.add('hide');
@@ -87,7 +97,6 @@ const startGame = (event) => {
 		const randomEnemy = Math.floor(Math.random() * MAX_ENEMY + 1); // вычисляем рандомное число
 		const periodEnemy = -HEIGHT_LINE * setting.traffic * i * 1.5; // расчитываем дистанцию между авто
 		enemy.y = periodEnemy; // задаем начальное расстояние автомобилей
-		if (i === 1) distance = periodEnemy; // сохраняем дистанцию
 		enemy.style.top = enemy.y + 'px'; // и устанавливаем это расстояние
 		enemy.style.background = `transparent url(\'./cars/enemy${randomEnemy}.png\') center / cover no-repeat`; // задаем стиль машины для соперников
 		road.append(enemy); // вставляем машину на игровое поле
@@ -109,21 +118,22 @@ let level = setting.level; // начальный уровень игры
 
 // запускаем игру
 const playGame = () => {
-	setting.level = Math.floor(setting.score / 5000) + 1;
+	setting.level = Math.floor(setting.score / 10) + 1;
 	if (setting.level !== level) {
 		level = setting.level;
 		setting.speed += 1;
 	}
 	if (setting.start) { // пока значение start===true, выполняем анимацию игры
-		setting.score += setting.speed;
-		score.textContent = 'Очки: ' + setting.score + ' Уровень: ' + level;
+		setting.score += setting.speed * 0.001;
+		score.textContent = 'Очки: ' + Math.floor(setting.score) + ' Уровень: ' + level;
+		record.textContent = 'Рекорд: ' + results;
 		moveRoad(); // движение разметки
 		moveEnemy(); // движение соперников
 		if (keys.ArrowLeft && setting.x > 0) { // если клавиша влево зажата и машина не за пределами дороги слева
-			setting.x -= setting.speed; // убавляем х на единицу скорости, сдвигаем машину влево
+			setting.x -= setting.speed / 2; // убавляем х на единицу скорости, сдвигаем машину влево
 		}
 		if (keys.ArrowRight && setting.x < (road.offsetWidth - car.offsetWidth)) { // если клавиша вправо зажата и машина не за пределами дороги справа
-			setting.x += setting.speed; // увеличиваем х на единицу скорости, сдвигаем машину вправо
+			setting.x += setting.speed / 2; // увеличиваем х на единицу скорости, сдвигаем машину вправо
 		}
 		if (keys.ArrowDown && setting.y < (road.offsetHeight - car.offsetHeight)) { // если клавиша вправо зажата и машина не за пределами дороги сзади
 			setting.y += setting.speed; // увеличиваем y на единицу скорости, сдвигаем машину назад
@@ -183,7 +193,7 @@ const moveEnemy = () => {
 		enemy.y = enemy.y + setting.speed / 2; // сдвигаем каждую от верха экрана на единицу скорости
 		enemy.style.top = enemy.y + 'px'; // и задаем это расстояние в стилях
 		if (enemy.y >= road.offsetHeight) { // если машина уехала за нижнюю границу экрана
-			enemy.y = distance; // ставим машину в начало
+			enemy.y = -HEIGHT_LINE * setting.traffic * setting.speed * 0.1; // ставим машину в начало
 			enemy.style.left = Math.floor(Math.random() * (road.offsetWidth - enemy.offsetWidth)) + 'px'; // и меняем положение по горизонтали
 		}
 	});

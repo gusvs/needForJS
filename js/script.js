@@ -1,6 +1,7 @@
 'use strict';
 
 const
+	lvl = document.querySelector('.level'), // поле уровень
 	audio = new Audio('./sounds/audio.mp3'), // добавляем аудио
 	MAX_ENEMY = 8, // количество машинок соперников
 	HEIGHT_LINE = 100, // высота элементов
@@ -41,6 +42,7 @@ const getLocalStorage = (quality) => {
 };
 
 // let results = parseInt(localStorage.getItem(setting.quality)); // получаем текущий рекорд из localStorage
+lvl.textContent = 'Уровень: 0';
 score.textContent = 'Очки: 0'; // начальное количество очков
 record.textContent = results ? 'Рекорд: ' + results : 'Рекорд: ' + 0; // если рекорд есть, показываем его на странице, иначе false
 
@@ -91,7 +93,7 @@ const startGame = (event) => {
 		line.style.height = (HEIGHT_LINE / 2) + 'px'; // устанавливаем высоту линий
 		road.append(line); // вставляем элемент на игровое поле
 	}
-	for (let i = 1; i <= getQuantityElements(HEIGHT_LINE * setting.traffic); i++) { // создаем машинки врагов, количество определяется трафиком
+	for (let i = 1; i < getQuantityElements(HEIGHT_LINE * setting.traffic); i++) { // создаем машинки врагов, количество определяется трафиком
 		const enemy = document.createElement('div'); // создаем элемент машинку
 		enemy.classList.add('enemy'); // добавляем класс
 		const randomEnemy = Math.floor(Math.random() * MAX_ENEMY + 1); // вычисляем рандомное число
@@ -125,7 +127,8 @@ const playGame = () => {
 	}
 	if (setting.start) { // пока значение start===true, выполняем анимацию игры
 		setting.score += setting.speed * 0.001;
-		score.textContent = 'Очки: ' + Math.floor(setting.score) + ' Уровень: ' + level;
+		score.textContent = 'Очки: ' + Math.floor(setting.score);
+		lvl.textContent = 'Уровень: ' + level;
 		record.textContent = 'Рекорд: ' + results;
 		moveRoad(); // движение разметки
 		moveEnemy(); // движение соперников
